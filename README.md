@@ -1,4 +1,4 @@
-# Project08_MotorControl
+# Project07_MotorControl
 
 Basys3에서 DC 모터 전달함수를 이산화하고 고정소수점 PID와 PWM을 Pure RTL로 구현하는
 학부 포트폴리오 프로젝트다. FPGA에서 Laplace transform을 실시간 계산하는 구조가 아니라,
@@ -45,7 +45,7 @@ bitstream이 아니다. 엔코더 환산값과 모터 응답을 측정한 뒤 op
 MATLAB Online:
 
 ```matlab
-cd Project08_MotorControl
+cd Project07_MotorControl
 RUN_MATLAB_CHECKS
 ```
 

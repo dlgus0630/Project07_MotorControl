@@ -37,7 +37,7 @@
 - encoder 3.3 V/약 0.01 A, C1 342~354 Hz 사각파 확인
 
 위 결과는 분리 전 동일 RTL의 공식 검증 결과이며 `artifacts/`에 증거를 보관했다. 저장소가
-`Project08_MotorControl`로 분리되면서 소스 해시가 달라졌으므로, 다음 build 전에
+`Project07_MotorControl`로 분리되면서 소스 해시가 달라졌으므로, 다음 build 전에
 `artifacts/matlab_input.zip`을 MATLAB Online에서 실행하고 XSim을 다시 실행해야 한다. gate를
 통과시키기 위해 결과 파일이나 해시를 수동으로 만들지 않는다.
 
