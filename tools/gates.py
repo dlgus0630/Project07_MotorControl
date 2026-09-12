@@ -22,8 +22,8 @@ def digest():
 
 def main():
     action, stage = sys.argv[1:3]
-    if stage not in {'matlab', 'sim'}:
-        raise SystemExit('stage: matlab or sim')
+    if stage not in {'matlab', 'sim', 'open_loop'}:
+        raise SystemExit('stage: matlab, sim, or open_loop')
     marker = ROOT / 'reports' / f'{stage}.pass'
     if action == 'clear':
         marker.unlink(missing_ok=True)
@@ -39,4 +39,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

@@ -3,7 +3,8 @@ source [file join $root vivado laplace_config.tcl]
 if {$laplace_mode ni {internal open_loop closed_loop}} {error "laplace_mode must be internal, open_loop, or closed_loop"}
 set external [expr {$laplace_mode ne "internal"}]
 set open_loop [expr {$laplace_mode eq "open_loop"}]
-set counts 200
+# Open-loop uses raw pulse display; 256 keeps the unused normalization path timing-safe.
+set counts 256
 if {$laplace_mode eq "closed_loop"} {
     if {![string is integer -strict $laplace_counts_full_scale] || $laplace_counts_full_scale<=0} {
         error "Set measured laplace_counts_full_scale before closed_loop. Use open_loop to measure pulses first."

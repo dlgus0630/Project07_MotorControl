@@ -4,9 +4,9 @@ module laplace_basys3_top #(
     parameter integer CLK_HZ=100000000,
     parameter integer EXTERNAL_MOTOR=0,
     parameter integer OPEN_LOOP=0,
-    parameter integer ENCODER_COUNTS_FULL_SCALE=200
+    parameter integer ENCODER_COUNTS_FULL_SCALE=256
 )(input wire clk,input wire btnC,input wire [4:0] sw,input wire encoder_a,
-    output wire motor_pwm,output wire motor_dir,output wire motor_enable,
+    output wire motor_pwm,output wire motor_in1,output wire motor_in2,
     output wire [15:0] led);
     wire rst;reset_sync resetter(clk,btnC,rst);
     (* ASYNC_REG="TRUE" *) reg [4:0] sw_meta,sw_sync;
@@ -29,8 +29,8 @@ module laplace_basys3_top #(
         clk,rst,sample_tick,encoder_a,enc_speed,encoder_pulse);
     pwm_period #(.PERIOD(CLK_HZ/20000)) pwm_unit(clk,rst,enabled,drive_duty,pwm_internal,active_duty);
     assign motor_pwm=EXTERNAL_MOTOR? pwm_internal:1'b0;
-    assign motor_enable=EXTERNAL_MOTOR?enabled:1'b0;
-    assign motor_dir=EXTERNAL_MOTOR?enabled:1'b0; // fixed forward direction only
+    assign motor_in1=EXTERNAL_MOTOR?enabled:1'b0;
+    assign motor_in2=1'b0; // fixed forward direction: IN1=1, IN2=0
     // In external mode SW4 displays unscaled A-channel rising edges per second.
     // This works before CPR is known. Saturate instead of silently wrapping.
     reg [31:0] pulse_timer;

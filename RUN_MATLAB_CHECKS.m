@@ -28,8 +28,6 @@ motor=motor/dcgain(motor);
 tau=J/(B+Kt*Ke/R);
 reduced=1/(tau*s+1);
 motor_z=c2d(reduced,C.ts,'zoh');
-figure('Visible','off');step(motor,reduced);legend('Full motor','Reduced motor');grid on;
-saveas(gcf,fullfile(outdir,'motor_model.png'));close(gcf);
 
 assignin('base','MOTOR_PID',C);
 assignin('base','MOTOR_REF',[T(:,1)*C.ts,T(:,2)]);
@@ -42,15 +40,13 @@ assert(isequal(actual_speed(:),T(:,6)) && isequal(actual_duty(:),T(:,5)),...
     'Simulink PID loop mismatch');
 
 save(fullfile(outdir,'matlab_reference.mat'),'C','motor','reduced','motor_z','T');
-figure('Visible','off');plot(T(:,1)*C.ts,[T(:,2),T(:,6),T(:,5)]/4096);grid on;
-xlabel('Time (s)');ylabel('Per unit');legend('Reference','Speed','Duty');
-saveas(gcf,fullfile(outdir,'pid_response.png'));close(gcf);
 close_system('laplace_pid_closed_loop',0);
 assert(strcmp(source_hash,source_digest(root)),'Source changed during validation; rerun.');
 write_marker(marker,source_hash);
-zip(fullfile(outdir,'matlab_results.zip'),...
-    {'reports/matlab.pass','reports/matlab_reference.mat','reports/motor_model.png',...
-     'reports/pid_response.png','reports/laplace_pid_closed_loop.slx'},root);
+result_files={'reports/matlab.pass','reports/matlab_reference.mat',...
+    'reports/laplace_pid_closed_loop.slx'};
+zip(fullfile(outdir,'matlab_results.zip'),result_files,root);
+fprintf('Plots skipped; numeric Golden and Simulink results are unchanged.\n');
 fprintf('MATLAB/SIMULINK PASS. Download reports/matlab_results.zip.\n');
 end
 
@@ -60,4 +56,3 @@ assert(file>=0,'Cannot write marker');
 cleanup=onCleanup(@()fclose(file));
 fprintf(file,'%s\n',value);
 end
-

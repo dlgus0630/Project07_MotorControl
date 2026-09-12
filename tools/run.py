@@ -11,13 +11,15 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('stage', choices=['create', 'sim', 'build'])
+    parser.add_argument('stage', choices=['create', 'sim', 'build', 'open-loop-sim', 'open-loop-build'])
     args = parser.parse_args()
     executable = os.environ.get('VIVADO') or shutil.which('vivado')
     if not executable:
         raise SystemExit('Vivado 2024.2 not found. Set VIVADO to its executable path.')
     source = {'create': 'create_laplace.tcl', 'sim': 'run_simulations.tcl',
-              'build': 'build_bitstream.tcl'}[args.stage]
+              'build': 'build_bitstream.tcl',
+              'open-loop-sim': 'run_open_loop_simulation.tcl',
+              'open-loop-build': 'build_open_loop_bitstream.tcl'}[args.stage]
     (ROOT / 'reports').mkdir(exist_ok=True)
     (ROOT / 'build').mkdir(exist_ok=True)
     environment = os.environ.copy()
@@ -32,4 +34,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
