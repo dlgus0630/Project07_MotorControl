@@ -12,11 +12,11 @@
 - 측정하지 않은 값을 실측, PASS 또는 완료로 기록하지 않는다.
 - 실패를 숨기지 않고 원인, 수정 내용, 재검증 결과를 함께 남긴다.
 - 소스 또는 동작 설정을 바꾸면 MATLAB/Simulink, 전체 XSim, Vivado 구현 순서로 다시 검증한다.
-- 커밋과 push는 사용자가 직접 한다. 작업자는 `git commit`, `git push`, PR 생성을 하지 않는다.
+- 커밋과 push는 사용자가 직접 하며, 사용자가 해당 작업을 명시적으로 요청한 경우에만 대신 수행한다.
 - Git 작성자는 `dlgus0630 <dlgus0630@naver.com>` 한 명만 사용한다.
 - 공동 작성자 trailer나 특정 작성 도구를 나타내는 문구를 파일, 커밋 메시지, PR에 넣지 않는다.
-- Project07은 MotorControl, Project08은 VibrationNPU다. 과거 이름과 혼동하지 않는다.
-- Basys3 Pure RTL 기준선을 보존하고 Zybo SoC 확장은 별도 계층과 별도 bitstream으로 진행한다.
+- Project07은 `Project07_MotorControl`과 `Project07_VibrationNPU` 두 저장소로 구성한다.
+- Basys3 Pure RTL 기준선을 보존하고 최종 Zybo SoC 통합은 `Project07_VibrationNPU`에서 진행한다.
 
 ### 작업 여유가 약 15% 이하일 때
 
@@ -313,8 +313,15 @@ hybrid가 기준선보다 jitter와 settling 분산을 실제로 줄였을 때�
 2. Open-loop 다단 duty CSV로 1차+dead-time 모델을 식별하고 60/20/20 train/validation/test 결과를 낸다.
 3. 식별 모델의 PI 후보와 현재 PI를 MATLAB, XSim, 동일 실물 step에서 비교한다.
 4. Encoder C2를 추가해 quadrature 방향 및 illegal transition을 검증한다.
-5. Zybo Z7-20에서 PL 제어 loop와 보호 FSM을 유지하고 AXI4-Lite register, telemetry FIFO/interrupt,
-   PS logger와 heartbeat watchdog를 추가한다.
+
+5번은 별도의 MotorControl Zybo 복제 프로젝트로 만들지 않는다. Basys3 Pure RTL 구현과 실측 결과는
+이 저장소의 독립 기준선으로 보존하고, 검증된 PI·hybrid encoder estimator·anti-windup·보호 FSM을
+`Project07_VibrationNPU`의 최종 Zybo 통합 시스템에서 재사용한다. 최종 시스템은 실제 진동을
+FFT/NPU로 분류하고 이상 판정이 모터 제한 또는 latched stop으로 이어지는 경로를 실측한다.
+
+AXI4-Lite, telemetry FIFO/interrupt와 PS heartbeat를 두 저장소에 중복 구현하지 않는다. 통합에 필요한
+최소 register/status와 안전 경로를 `Project07_VibrationNPU`에 두고, 이 저장소에서는 Basys3 제어
+기준선과 제어 알고리즘의 검증 증거를 유지한다.
 
 Zybo 단계에서도 100 Hz 제어, PWM, encoder와 보호 기능은 PL이 소유해야 한다. PS가 멈추거나 heartbeat가
 끊겨도 PL이 motor output을 차단하도록 한다. AXI register는 version/status/reference/Kp/Ki/command,
@@ -323,10 +330,8 @@ fault cause, sample counter와 telemetry overflow/drop counter를 포함한다.
 ## 10. 저장소 상태와 종료 전 확인
 
 - branch: `main`
-- 마지막 commit: `4d5c1c26c53c943b62ecf9e36621ee982b8ee13f`
-- 마지막 commit 제목: `Rename project to Project07_MotorControl`
-- 현재 작업은 다수의 tracked 수정과 새 파일이 있는 미커밋 상태다.
-- 절대로 `git reset --hard`, 대량 삭제, commit 또는 push를 실행하지 않는다.
+- 현재 완료된 hybrid estimator 기준선과 실측 결과는 README 및 이 문서에 반영됐다.
+- 명시적인 사용자 요청 없이 `git reset --hard`, 대량 삭제, commit 또는 push를 실행하지 않는다.
 
 종료 전 최소 기록:
 
