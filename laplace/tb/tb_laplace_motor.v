@@ -2,9 +2,9 @@
 module tb_laplace_motor;
     reg clk=0;always #5 clk=~clk;
     reg reset=1,enc=0;reg [4:0] sw=0;
-    wire pwm,in1,in2;wire [15:0] led;
+    wire pwm,in1,in2,uart;wire [15:0] led;
     integer j,n;
-    laplace_basys3_top #(.CLK_HZ(320000),.EXTERNAL_MOTOR(1),.OPEN_LOOP(1)) dut(clk,reset,sw,enc,pwm,in1,in2,led);
+    laplace_basys3_top #(.CLK_HZ(320000),.EXTERNAL_MOTOR(1),.OPEN_LOOP(1)) dut(clk,reset,sw,enc,pwm,in1,in2,led,uart);
     initial begin
         repeat(5)@(negedge clk);reset=0;repeat(20)@(negedge clk);
         // 37 known external rising edges; SW4 must display raw count, not Q12 speed.

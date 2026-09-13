@@ -39,12 +39,14 @@ actual_duty=result.get('sl_duty');
 assert(isequal(actual_speed(:),T(:,6)) && isequal(actual_duty(:),T(:,5)),...
     'Simulink PID loop mismatch');
 
+SELF_TEST_ANALYSIS(outdir);
+
 save(fullfile(outdir,'matlab_reference.mat'),'C','motor','reduced','motor_z','T');
 close_system('laplace_pid_closed_loop',0);
 assert(strcmp(source_hash,source_digest(root)),'Source changed during validation; rerun.');
 write_marker(marker,source_hash);
 result_files={'reports/matlab.pass','reports/matlab_reference.mat',...
-    'reports/laplace_pid_closed_loop.slx'};
+    'reports/laplace_pid_closed_loop.slx','reports/analysis_self_test.txt'};
 zip(fullfile(outdir,'matlab_results.zip'),result_files,root);
 fprintf('Plots skipped; numeric Golden and Simulink results are unchanged.\n');
 fprintf('MATLAB/SIMULINK PASS. Download reports/matlab_results.zip.\n');

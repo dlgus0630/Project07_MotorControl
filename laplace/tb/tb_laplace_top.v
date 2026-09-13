@@ -2,9 +2,9 @@
 module tb_laplace_top;
     reg clk=0;always #5 clk=~clk;
     reg reset=1;reg [4:0] sw=5'b01111;
-    wire pwm,dir,en,ipwm,idir,ien;wire [15:0] led,iled;
-    laplace_basys3_top #(.CLK_HZ(200000),.EXTERNAL_MOTOR(1)) external_dut(clk,reset,sw,1'b0,pwm,dir,en,led);
-    laplace_basys3_top #(.CLK_HZ(200000)) internal_dut(clk,reset,sw,1'b0,ipwm,idir,ien,iled);
+    wire pwm,dir,en,ipwm,idir,ien,uart,iuart;wire [15:0] led,iled;
+    laplace_basys3_top #(.CLK_HZ(200000),.EXTERNAL_MOTOR(1)) external_dut(clk,reset,sw,1'b0,pwm,dir,en,led,uart);
+    laplace_basys3_top #(.CLK_HZ(200000)) internal_dut(clk,reset,sw,1'b0,ipwm,idir,ien,iled,iuart);
     always @(negedge clk)if(ipwm!==0 || idir!==0 || ien!==0)begin $display("TEST FAIL internal mode motor pin");$finish;end
     initial begin
         repeat(4)@(negedge clk);reset=0;repeat(20)@(negedge clk);

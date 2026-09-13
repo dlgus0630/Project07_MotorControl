@@ -7,7 +7,7 @@ module laplace_basys3_top #(
     parameter integer ENCODER_COUNTS_FULL_SCALE=256
 )(input wire clk,input wire btnC,input wire [4:0] sw,input wire encoder_a,
     output wire motor_pwm,output wire motor_in1,output wire motor_in2,
-    output wire [15:0] led);
+    output wire [15:0] led,output wire uart_tx);
     wire rst;reset_sync resetter(clk,btnC,rst);
     (* ASYNC_REG="TRUE" *) reg [4:0] sw_meta,sw_sync;
     reg seen_off,armed,fault;reg [2:0] switch_warmup;reg [31:0] tick_count,stall_count;
@@ -25,12 +25,22 @@ module laplace_basys3_top #(
     wire pwm_internal;wire [12:0] active_duty;
     pid_fixed controller(clk,controller_reset,start,reference,speed,pid_busy,pid_done,duty,integral,derivative);
     motor_plant plant(clk,controller_reset,pid_done,duty,load,plant_speed,plant_done);
-    encoder_speed #(.COUNTS_FULL_SCALE(ENCODER_COUNTS_FULL_SCALE)) encoder(
+    encoder_speed_hybrid #(.CLK_HZ(CLK_HZ),.COUNTS_FULL_SCALE(ENCODER_COUNTS_FULL_SCALE)) encoder(
         clk,rst,sample_tick,encoder_a,enc_speed,encoder_pulse);
     pwm_period #(.PERIOD(CLK_HZ/20000)) pwm_unit(clk,rst,enabled,drive_duty,pwm_internal,active_duty);
     assign motor_pwm=EXTERNAL_MOTOR? pwm_internal:1'b0;
     assign motor_in1=EXTERNAL_MOTOR?enabled:1'b0;
     assign motor_in2=1'b0; // fixed forward direction: IN1=1, IN2=0
+    reg [1:0] telemetry_tick_pipe;
+    wire telemetry_sample=(EXTERNAL_MOTOR && OPEN_LOOP)?telemetry_tick_pipe[1]:pid_done;
+    wire telemetry_busy;
+    telemetry_uart #(.CLK_HZ(CLK_HZ),.BAUD(115200)) telemetry(
+        clk,rst,telemetry_sample,reference,speed,drive_duty,integral,armed,fault,enabled,
+        uart_tx,telemetry_busy);
+    always @(posedge clk)begin
+        if(rst)telemetry_tick_pipe<=0;
+        else telemetry_tick_pipe<={telemetry_tick_pipe[0],sample_tick};
+    end
     // In external mode SW4 displays unscaled A-channel rising edges per second.
     // This works before CPR is known. Saturate instead of silently wrapping.
     reg [31:0] pulse_timer;

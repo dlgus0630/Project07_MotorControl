@@ -5,7 +5,7 @@ module tb_pwm_encoder;
     reg enc=0,tick=0;wire [12:0] speed;wire pulse;
     integer j,n;
     pwm_period #(.PERIOD(16)) p(clk,rst,en,duty,pwm,active);
-    encoder_speed #(.COUNTS_FULL_SCALE(8)) e(clk,rst,tick,enc,speed,pulse);
+    encoder_speed #(.COUNTS_FULL_SCALE(18)) e(clk,rst,tick,enc,speed,pulse);
     task frame;
         input [12:0] value;input integer expected;
         begin
@@ -18,7 +18,8 @@ module tb_pwm_encoder;
         repeat(4)@(negedge clk);rst=0;en=1;
         frame(2048,8);frame(4096,16);frame(0,0);
         frame(4096,16);#2 en=0;#1;if(pwm!==0)begin $display("TEST FAIL asynchronous disable");$finish;end
-        for(j=0;j<4;j=j+1)begin @(negedge clk);enc=1;repeat(4)@(negedge clk);enc=0;repeat(4)@(negedge clk);end
+        // Nine edges with the measured 18-count full scale must be exactly 0.5 pu.
+        for(j=0;j<9;j=j+1)begin @(negedge clk);enc=1;repeat(4)@(negedge clk);enc=0;repeat(4)@(negedge clk);end
         tick=1;@(negedge clk);tick=0;
         if(speed!==2048)begin $display("TEST FAIL encoder normalization %d",speed);$finish;end
         $display("TEST PASS tb_pwm_encoder");$finish;

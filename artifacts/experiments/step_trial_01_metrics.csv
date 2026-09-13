@@ -1,0 +1,2 @@
+InitialRPM,TargetRPM,RiseTime_s,Overshoot_pct,SettlingTime_s,SteadyRPM,SteadyError_pct,SettlingBand_RPM,Frames,DroppedFrames,BadChecksums,StepTime_s
+27.1393,40.9742,0.31,6.421,4.75,40.7332,-0.588,0.8195,3002,0,0,23.24

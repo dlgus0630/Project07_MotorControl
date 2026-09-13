@@ -1,41 +1,68 @@
 # 실물 시험 결과
 
-## 완료된 부품 단독 시험
+## 완료된 시험
 
 | 항목 | 시험 조건 | 측정 결과 | 판정 |
 |---|---|---|---|
-| 모터 권선 | 빨강-흰색 저항 및 축 회전 | 약 130~150 Ω, 회전 시 변동 | 배선 확인 |
-| 모터 구동 | DC 3.0 V 직접 인가 | 정상 회전 | PASS |
-| 모터 전류 | DC 3.0 V, 무부하 | 약 0.09~0.11 A | 확인 |
-| 회전 방향 | 출력축 정면 기준 | CW | 확인 |
-| encoder 전원 | DC 3.3 V | 약 0.01 A | 확인 |
-| encoder C1 | 초록선, 오실로스코프 | 사각파 | PASS |
-| C1 주기 | DC 3.0 V 모터 구동 시 | 약 2.8~2.9 ms | 확인 |
-| C1 주파수 | DC 3.0 V 모터 구동 시 | 약 342~354 Hz | 확인 |
-| C1 전압 | encoder 3.3 V 공급 시 | 약 0~3.6 V | 직결 전 재확인 |
-| encoder C2 | 노랑선 | 미측정 | 선택 시험 |
+| 모터 권선 | 빨강-흰색 저항 및 축 회전 | 약 130~150 ohm, 회전 시 변동 | 배선 확인 |
+| 모터 단독 구동 | DC 3.0 V | CW 회전, 약 0.09~0.11 A | PASS |
+| JA1 PWM | SW2+SW0 ON | 20 kHz, 약 25%, 약 0~3.3 V | PASS |
+| JA2/JA3 | 정방향 | 약 3.39 V / 약 0 V | PASS |
+| L298N ENA | JA1 연결 후 측정 | JA1과 동일한 PWM | PASS |
+| L298N open-loop | PSU 12.0 V, 25% PWM | 연속 회전, 약 0.07 A | PASS |
+| Encoder C1 | Basys3 3.3 V, JA4 입력 | 약 0~3.3 V 디지털 pulse | PASS |
+| C1 주파수 | 위 open-loop 조건 | 약 90.75 Hz | PASS |
+| FPGA C1 입력 | SW4 pulse-count 표시 | LED count 변화 | PASS |
+| 출력축 속도 | 10회전 85.0 s | 약 7.06 RPM | 확인 |
+| 첫 CPR 추정 | open-loop 90.75 Hz, 10회전 85.0 s | 약 771.4 pulse/output-rev | 재현되지 않아 폐기 |
+| 폐루프 보정 측정 1 | 172.4 Hz, 10회전 57.30 s | 약 987.9 pulse/output-rev | 확인 |
+| 폐루프 보정 측정 2 | 172.4 Hz, 5회전 28.70 s | 약 989.6 pulse/output-rev | 확인 |
+| 최종 C1 CPR | 총 15회전 86.00 s | 약 988.4 pulse/output-rev | 확정 |
+| PI 목표 1 | SW1, 목표 225 Hz/13.66 RPM | 221.2 Hz, 5회전 22.40 s, 0.08 A, LD1 OFF | PASS |
+| PI 목표 2 | SW2, 목표 450 Hz/27.32 RPM | 446.4 Hz, 5회전 11.10 s, 0.11 A, LD1 OFF | PASS |
+| Encoder C2 | 노랑선 | 미측정, 미연결 | 선택 시험 |
 
-확인된 배선은 빨강 `M1`, 흰색 `M2`, 파랑 encoder `VCC`, 검정 encoder `GND`, 초록 `C1`이다.
-노랑 `C2`는 기판 표기와 배선 순서로 식별했으며 파형은 측정하지 않았다.
+## Encoder 환산
 
-C1의 사각파로 encoder 동작은 확인했다. 다만 3.3 V 공급에서 약 3.6 V HIGH가 관찰됐으므로 이를
-Basys3 입력 적합성 PASS로 기록하지 않는다. probe 설정과 공통 GND를 확인해 HIGH 평탄부와 overshoot를
-다시 측정한다. 안정된 HIGH가 3.3 V를 넘으면 level shifter 또는 검증된 분압 회로를 사용한다.
+```text
+C1 CPR measurement 1 = 172.4 * 57.30 / 10 = 987.852 pulse/rev
+C1 CPR measurement 2 = 172.4 * 28.70 / 5 = 989.576 pulse/rev
+C1 CPR combined = 172.4 * (57.30 + 28.70) / 15 = 988.427 pulse/rev
+counts_full_scale = 988.427 * 110 / 60 * 0.01 = 18.12 -> 18
+```
 
-현재 342~354 Hz만으로 CPR이나 `laplace_counts_full_scale`을 정하지 않는다. 당시 출력축 RPM을
-동시에 측정하지 않았고 3 V 조건은 정격 12 V 조건과 다르기 때문이다.
+CPR은 C1 상승 에지와 gearbox 출력축을 같은 기준으로 두 번 반복 측정한 실측값이다. 두 결과의
+차이는 약 0.17%다. 10 ms encoder window와 110 RPM full-scale을 사용하는 closed-loop RTL에는
+`ENCODER_COUNTS_FULL_SCALE=18`을 적용한다. 이 설정에서 SW1 목표는 C1 225 Hz, 약 13.66 RPM이다.
 
-## 남은 최소 시험
+## PI 폐루프 추종 결과
 
-1. L298N의 ENA 점퍼를 제거하고 5V-EN 및 전원 단자를 식별한다.
-2. 모터를 떼고 Basys3 JA1에서 20 kHz, 0~3.3 V PWM과 JA2/JA3 방향 출력을 확인한다.
-3. 12 V, 0.3~0.5 A 제한에서 open-loop 25% 구동을 확인한다.
-4. 같은 조건에서 C1 pulse/s와 출력축 RPM을 동시에 기록한다.
-5. 측정값으로 encoder 환산값을 정한 뒤 closed-loop PID를 시험한다.
+```text
+SW1 mechanical RPM = 300 / 22.40 = 13.39 RPM
+SW1 encoder RPM = 60 * 221.2 / 988.427 = 13.43 RPM
+SW1 mechanical target error = -1.94%
 
-## 보고용 문장
+SW2 mechanical RPM = 300 / 11.10 = 27.03 RPM
+SW2 encoder RPM = 60 * 446.4 / 988.427 = 27.10 RPM
+SW2 mechanical target error = -1.06%
+```
 
-JGB37-520 모터를 3.0 V에서 단독 시험한 결과 출력축 정면 기준 CW로 정상 회전했고 무부하 전류는
-약 0.09~0.11 A였다. Encoder에 3.3 V를 공급해 C1을 측정한 결과 약 342~354 Hz의 사각파를
-확인했다. 모터와 encoder의 단독 동작은 확인했으며, L298N을 통한 Basys3 open-loop 구동과 encoder
-환산값 측정, PID closed-loop 검증은 남아 있다.
+두 운전점에서 encoder 환산값과 출력축 실측값의 차이는 약 0.3% 이내였다. SW1의 C1 주파수는
+약 219.2~225.2 Hz 사이에서 변했으며 대표값은 221.2 Hz였다. 두 시험 모두 모터는 연속 회전했고
+stall fault인 LD1은 OFF였다.
+
+최종 CPR 988.4 보정 소스는 MATLAB/Simulink, XSim testbench 5개와 Vivado 2024.2 구현을 통과했다.
+최종 구현 결과는 setup slack +0.060 ns, hold slack +0.122 ns, DRC Error 0, LUT 450, FF 416,
+DSP 4, BRAM 0이다.
+
+## 선택 확장 시험
+
+1. 시간축 reference step response를 기록해 상승시간, overshoot와 정착시간을 계산한다.
+2. 재현 가능한 외란 부하를 인가하고 속도 복원시간을 측정한다.
+3. C2를 연결해 방향 검출이 필요한 양방향 제어로 확장한다.
+
+## 안전 메모
+
+배선은 Basys3 OFF와 PSU OUTPUT OFF 상태에서만 변경한다. Scope ground는 공통 GND에만 연결한다.
+ENA probing 중 물리적 접촉으로 모터가 일시 정지한 사례가 있으므로 실제 motor 시험 중 ENA probe를
+건드리지 않는다.

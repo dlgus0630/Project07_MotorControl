@@ -1,4 +1,4 @@
-// Q12 per-unit PID, Ts=10 ms. All negative divisions round toward -infinity.
+// Q12 per-unit PI, Ts=10 ms. All negative divisions round toward -infinity.
 module pid_fixed(input wire clk,input wire rst,input wire start,
     input wire [12:0] reference,input wire [12:0] measured,
     output reg busy,output reg done,output reg [12:0] duty,
@@ -34,7 +34,7 @@ module pid_fixed(input wire clk,input wire rst,input wire start,
         end
         FILTER:begin derivative<=filter_value[17:0];y_previous<=y_hold;state<=PRODUCTS;end
         PRODUCTS:begin
-            p_term<=(64'sd58982*e64)>>>16;d_term<=(64'sd9830*df64)>>>16;
+            p_term<=(64'sd58982*e64)>>>16;d_term<=0;
             if(i_candidate>4096)candidate<=4096;
             else if(i_candidate< -4096)candidate<=-4096;else candidate<=i_candidate;
             state<=PROPOSE_ADD;

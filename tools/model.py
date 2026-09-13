@@ -3,7 +3,7 @@ import math
 
 TAU = .0002 / (.0001 + .05 * .05 / 2)
 PID_CFG = {'ts': .01, 'kp': round(.9 * 65536), 'ki_ts': round(6 * .01 * 65536),
-           'kd_ts': round(.0015 / .01 * 65536), 'plant_a': round(math.exp(-.01 / TAU) * 65536)}
+           'kd_ts': 0, 'plant_a': round(math.exp(-.01 / TAU) * 65536)}
 
 
 def sat(value, low, high):
@@ -35,4 +35,3 @@ def pid_trace(count=1200):
         rows.append([index, reference, load, speed, duty, next_speed, integral, derivative])
         speed = next_speed
     return rows
-

@@ -13,7 +13,7 @@ set_property file_type {Memory File} [get_files *.mem]
 add_files -fileset sim_1 [glob [file join $root laplace tb *.v]]
 set_property file_type Verilog [get_files *.v]
 set_property xsim.simulate.runtime 0ns [get_filesets sim_1]
-set tests {tb_pid_loop tb_pid_limits tb_pwm_encoder tb_laplace_top tb_laplace_motor}
+set tests {tb_pid_loop tb_pid_limits tb_pwm_encoder tb_encoder_hybrid tb_uart_telemetry tb_laplace_top tb_laplace_motor}
 file mkdir [file join $root reports]
 foreach test $tests {
     catch {close_sim}
