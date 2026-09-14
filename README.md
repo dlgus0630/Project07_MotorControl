@@ -33,8 +33,8 @@ D항은 첫 실물 시험에서 제외했고 derivative state는 향후 PID 비�
 | 단계 | 결과 |
 |---|---|
 | MATLAB/Simulink 기준 모델 | CPR 988.4 보정 PI PASS |
-| XSim 기준선 | 5개 testbench PASS |
-| UART telemetry 단위시험 | 16-byte payload/checksum XSim PASS, 전체 regression 대기 |
+| XSim regression | 7개 testbench PASS (`tb_encoder_hybrid` 포함) |
+| UART telemetry 단위시험 | 16-byte payload/checksum PASS, 전체 regression에 포함 |
 | Vivado 2024.2 open-loop | Timing PASS, DRC Error 0 |
 | Basys3 PWM/방향 출력 | PASS |
 | L298N ENA 전달 | PASS |
@@ -46,8 +46,13 @@ D항은 첫 실물 시험에서 제외했고 derivative state는 향후 PID 비�
 | 목표 속도 추종 | 13.66 RPM 및 27.32 RPM 두 운전점 PASS |
 
 Open-loop 구현 결과는 setup slack `+3.142 ns`, hold slack `+0.122 ns`, LUT 84, FF 180,
-DSP 1, BRAM 0이다. 최종 PI closed-loop 구현은 setup slack `+0.060 ns`, hold slack `+0.122 ns`,
-DRC Error 0, LUT 450, FF 416, DSP 4, BRAM 0을 기록했다.
+DSP 1, BRAM 0이다. telemetry와 hybrid estimator를 넣기 전의 PI closed-loop 중간 구현은
+setup slack `+0.060 ns`, hold slack `+0.122 ns`, LUT 450, FF 416, DSP 4, BRAM 0이었다.
+
+hysteresis 수정까지 반영한 최종 구현(`artifacts/laplace_pi_hybrid_telemetry.bit`)은
+setup slack `+0.116 ns`, hold slack `+0.093 ns`, DRC Error 0, LUT 741, FF 791, DSP 4,
+BRAM 0을 기록했다. 근거 보고서는 `artifacts/laplace_pi_hybrid_telemetry_timing.rpt`,
+`_utilization.rpt`, `_drc.rpt`다.
 
 ## 배선
 
