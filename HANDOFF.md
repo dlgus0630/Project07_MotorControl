@@ -102,14 +102,30 @@ BRAM       = 0
 - hybrid reciprocal/window estimator와 iterative divider 구현, isolated XSim PASS
 - 남은 gate: hybrid 소스 MATLAB Online -> 전체 XSim 7개 -> Vivado timing/DRC -> 비교 capture
 
-## 이후 확장 작업
+## 이후 확장 작업 — 2026-09-15 방향 변경
 
-1. 27.32 -> 40.97 RPM step을 5회 기록해 상승시간, overshoot, 정착시간의 평균과 표준편차를 계산한다.
-2. 12 -> 9 -> 12 V 외란을 3회 기록해 최대 속도편차와 복원시간을 계산한다.
-3. Open-loop 다단 입력으로 모터를 식별하고 train/validation/test 오차와 PI 후보를 기존 PI와 비교한다.
-4. 저속 reciprocal-period estimator와 C2 quadrature 방향 검출을 추가한다.
-5. Zybo Z7-20 PL 제어 IP, AXI4-Lite register bank, interrupt/FIFO telemetry와 PS logger로 확장한다.
+**이 저장소는 최종 실물 시스템이 아니라 "개발·검증 기준선"으로 역할이 바뀌었다.** 2026-09-15에
+Basys3와 Zybo 두 보드를 계속 나눠 유지하는 대신, 이 저장소에서 만든 encoder hybrid
+estimator/PI/anti-windup을 `Project07_VibrationNPU`(Zybo Z7-20)의 PL로 이식해 한 보드로
+완전히 통합하기로 결정했다. 포트폴리오 서술: "Basys3에서 순수 RTL 모터 폐루프 제어기를
+개발·검증한 뒤 Zybo Z7-20 PL로 이식해 ARM 센서 수집, FFT/NPU 진동 분류, 단계별 안전 제어와
+통합했다."
 
-문서는 최종 실물 시험 뒤 갱신됐다. 현재 bitstream과 보고서는 갱신 전 동일 RTL/config를 검증해 만든
-결과다. 다시 빌드할 경우 문서 변경으로 source digest가 달라졌으므로 MATLAB 및 XSim gate를 다시
-실행한다. gate 결과 파일이나 해시는 수동으로 만들지 않는다.
+이 저장소는 삭제하지 않고 GitHub에 그대로 유지한다 — 통합판이 기준선과 같은 동작을 내는지
+비교할 근거이자, "RTL 제어기를 처음부터 직접 설계·검증했다"는 증거로 남긴다.
+
+**따라서 아래는 이 저장소(Basys3)에서 더 진행하지 않는다:**
+
+- 12 -> 9 -> 12 V 외란 시험은 Basys3에서 반복하지 않는다. Zybo 통합판이 완성된 뒤 그쪽에서
+  한 번 수행한다. 절차는 아래 "전원 외란 복원" 문서를 Zybo 저장소 쪽에서 참고해 새로 만든다.
+- 27.32 -> 40.97 RPM 5회 반복, open-loop 식별, C2 quadrature도 통합판 완성 뒤 필요하면 그쪽에서
+  진행 여부를 판단한다. 이 저장소에서 먼저 손대지 않는다.
+
+**이 저장소에서 유지·완료해야 할 것은 이것뿐이다:**
+
+- 현재 기록된 hybrid estimator + PI + telemetry 결과(설정, 코드, 실측치)를 그대로 보존한다.
+  Zybo 이식 작업의 원본 참조가 된다.
+- 이식 과정에서 이 저장소의 RTL을 고치지 않는다. 참고만 하고 복사해서 옮긴다.
+
+진행 순서와 Zybo 쪽 목표 구조는 `Project07_VibrationNPU/HANDOFF.md`의
+"다음 작업 순서 — Zybo 단일보드 완전 통합" 절에 있다.
